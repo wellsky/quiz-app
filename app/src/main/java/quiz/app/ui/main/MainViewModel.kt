@@ -21,7 +21,10 @@ class MainViewModel(
 
     init {
         viewModelScope.launch {
-            service.getQuestion()
+            val question = service.getQuestion(2)
+            _state.value = MainViewState(
+                text = question.text
+            )
         }
     }
 }
