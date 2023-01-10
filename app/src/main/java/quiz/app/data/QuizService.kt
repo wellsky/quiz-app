@@ -10,13 +10,19 @@ import io.ktor.serialization.kotlinx.json.json
 import quiz.app.model.Question
 
 class QuizService {
-    suspend fun getQuestion(id: Long): Question {
-        val client = HttpClient(CIO) {
-            install(ContentNegotiation) {
-                json()
-            }
+    private val client = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json()
         }
+    }
+
+    suspend fun getQuestion(id: Long): Question {
         val response: HttpResponse = client.get("$ServerAddress$GetQuestionPath/$id")
+        return response.body()
+    }
+
+    suspend fun getRandomQuestion(): Question {
+        val response: HttpResponse = client.get("$ServerAddress$GetRandomQuestionPath")
         return response.body()
     }
 }
@@ -24,3 +30,4 @@ class QuizService {
 private const val ServerAddress = "http://192.168.10.3:8080"
 
 private const val GetQuestionPath = "/question"
+private const val GetRandomQuestionPath = "/randomquestion"
