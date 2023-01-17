@@ -12,6 +12,7 @@ class MainViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(
         MainViewState(
+            questionId = 0,
             questionText = "Text from viewModel",
             answers = emptyList(),
         )
@@ -24,8 +25,36 @@ class MainViewModel(
         nextQuestion()
     }
 
+    fun onDismissDialog() {
+        _state.value = _state.value.copy(
+            dialogSuccess = null,
+        )
+    }
+
     fun onAnswerClick(answerId: Long) {
-        println("Answer clicked " + answerId)
+        viewModelScope.launch {
+            try {
+                val answerResult = service.answer(
+                    questionId = _state.value.questionId,
+                    answerId = answerId,
+                )
+
+                if (answerResult.correct) {
+                    _state.value = _state.value.copy(
+                        dialogSuccess = true,
+                    )
+                } else {
+                    _state.value = _state.value.copy(
+                        dialogSuccess = false,
+                    )
+                }
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    error = true,
+                )
+            }
+        }
+
     }
 
     fun nextQuestion() {
@@ -34,6 +63,7 @@ class MainViewModel(
                 val question = service.getRandomQuestion()
 
                 _state.value = MainViewState(
+                    questionId = question.id,
                     questionText = question.text,
                     answers = question.answers.map {
                         AnswerViewState(
